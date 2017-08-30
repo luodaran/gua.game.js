@@ -74,6 +74,24 @@ var Ball = function() {
             o.y += o.speedY
         }
     }
+    var currentSpeedY
+    var currentSpeedX
+    var stopTimes = 0
+    o.stop = function(){
+      if(o.speedY>0||o.speedX >0){
+        currentSpeedY = o.speedY
+        currentSpeedX = o.speedX
+        o.speedY = 0
+        o.speedX = 0
+      }
+      else{
+        o.speedY = currentSpeedY
+        o.speedX = currentSpeedX
+      }
+      stopTimes = stopTimes+1
+      log("停止次数",stopTimes)
+      log(currentSpeedX,currentSpeedY,o.speedX,o.speedY)
+    }
     return o
 }
 
@@ -137,7 +155,12 @@ var __main = function() {
         paddle.moveRight()
     })
     game.registerAction('f', function(){
+
         ball.fire()
+    })
+    game.registerAction('s', function(){
+            //有bug
+        ball.stop()
     })
 
     game.update = function() {
