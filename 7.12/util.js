@@ -1,13 +1,3 @@
-var log = console.log.bind(console)
-
-var imageFromPath = function(path) {
-    var img = new Image()
-    img.src = path
-    return img
-}
-
-
-//判断两个矩形是否相交
 var clide = function(r1,r2){
   var nMaxLeft = 0
   var nMaxTop = 0

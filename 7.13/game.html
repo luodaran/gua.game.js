@@ -64,7 +64,7 @@ var __main = function() {
     var paddle = Paddle()
     var ball = Ball()
 
-    blocks = loadLevel(1)
+    blocks = loadLevel(3)
 
     var paused = false
     game.registerAction('a', function(){
@@ -83,17 +83,19 @@ var __main = function() {
         }
         ball.move()
         // 判断相撞
-        if (paddle.collide(ball)) {
+        if (clide(paddle,ball)) {
             // 这里应该调用一个 ball.反弹() 来实现
             ball.反弹()
         }
         // 判断 ball 和 blocks 相撞
         for (var i = 0; i < blocks.length; i++) {
             var block = blocks[i]
-            if (block.collide(ball)) {
-                // log('block 相撞')
+            if (clide(block,ball)) {
+                log('block 相撞')
                 block.kill()
-                ball.反弹()
+                if(block.alive){
+                    ball.反弹()
+                }
             }
         }
     }

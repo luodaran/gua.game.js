@@ -12,14 +12,15 @@ var Block = function(position) {
         lifes: p[2] || 1,
     }
     o.kill = function() {
+        log('o',o)
         o.lifes--
         if (o.lifes < 1) {
             o.alive = false
         }
     }
     o.collide = function(b) {
-        // log('block', o.alive, b)
-        return o.alive && (rectIntersects(o, b) || rectIntersects(b, o))
+        log('block', o.alive, b)
+        return o.alive && (clide(o, b) || clide(b, o))
     }
     return o
 }

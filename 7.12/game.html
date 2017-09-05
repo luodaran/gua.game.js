@@ -9,9 +9,13 @@
             }
         </style>
     </head>
+      <script src='util.js'></script>
     <body>
         <canvas id="id-canvas" width="400" height="300"></canvas>
+
+
 <script>
+
 var log = console.log.bind(console)
 
 var imageFromPath = function(path) {
@@ -20,29 +24,37 @@ var imageFromPath = function(path) {
     return img
 }
 
+var canvasMaxX = 400 ;
+
+
 var Paddle = function() {
     var image = imageFromPath('paddle.png')
     var o = {
         image: image,
         x: 100,
-        y: 250,
+        y: 280,
         speed: 15,
+        draggable:false,
     }
     var paddle = o
+
+    o.move = function(x) {
+        if (x < 0) {
+            x = 0
+        }
+        if (x > 400 - o.image.width) {
+            x = 400 - o.image.width
+        }
+        o.x = x
+    }
     o.moveLeft = function() {
-        paddle.x -= paddle.speed
+        o.move(paddle.x - paddle.speed)
     }
     o.moveRight = function() {
-        paddle.x += paddle.speed
+        o.move(paddle.x + paddle.speed)
     }
-    o.collide = function(ball) {
-        if (ball.y + ball.image.height > o.y) {
-            if (ball.x > o.x && ball.x < o.x + o.image.width) {
-                log('相撞')
-                return true
-            }
-        }
-        return false
+    o.drag = function(){
+         o.draggable=!o.draggable
     }
     return o
 }
@@ -56,12 +68,15 @@ var Ball = function() {
         speedX: 10,
         speedY: 10,
         fired: false,
+        stop:false,
+        draggable:false,
     }
     o.fire = function() {
         o.fired = true
     }
     o.move = function() {
-        if (o.fired) {
+        // log("stop",o.stop)
+        if (o.fired&&!o.stop) {
             // log('move')
             if (o.x < 0 || o.x > 400) {
                 o.speedX = -o.speedX
@@ -74,23 +89,11 @@ var Ball = function() {
             o.y += o.speedY
         }
     }
-    var currentSpeedY
-    var currentSpeedX
-    var stopTimes = 0
-    o.stop = function(){
-      if(o.speedY>0||o.speedX >0){
-        currentSpeedY = o.speedY
-        currentSpeedX = o.speedX
-        o.speedY = 0
-        o.speedX = 0
-      }
-      else{
-        o.speedY = currentSpeedY
-        o.speedX = currentSpeedX
-      }
-      stopTimes = stopTimes+1
-      log("停止次数",stopTimes)
-      log(currentSpeedX,currentSpeedY,o.speedX,o.speedY)
+    o.drag = function(){
+         o.draggable=!o.draggable
+    }
+    o.stopSelf = function(){
+       o.stop=!o.stop
     }
     return o
 }
@@ -102,7 +105,7 @@ var GuaGame = function() {
         keydowns: {},
     }
     var canvas = document.querySelector('#id-canvas')
-    var context = canvas.getContext('2d')
+    var context = canvas.getContext(  '2d')
     g.canvas = canvas
     g.context = context
     // draw
@@ -155,19 +158,15 @@ var __main = function() {
         paddle.moveRight()
     })
     game.registerAction('f', function(){
-
         ball.fire()
-    })
-    game.registerAction('s', function(){
-            //有bug
-        ball.stop()
     })
 
     game.update = function() {
         ball.move()
         // 判断相撞
-        if (paddle.collide(ball)) {
+        if (clide(paddle,ball)) {
             // 这里应该调用一个 ball.反弹() 来实现
+            log('相撞')
             ball.speedY *= -1
         }
     }
@@ -176,6 +175,54 @@ var __main = function() {
         game.drawImage(paddle)
         game.drawImage(ball)
     }
+
+    window.addEventListener("keydown", function(event){
+        log('event',event)
+        if(event.key=='s'){
+            ball.stopSelf()
+        }
+    })
+
+
+    window.addEventListener("mousedown", function(event ){
+        var fakeImage ={
+            width: 0,
+            height: 0,
+        }
+        var p = {
+            x: 0,
+            y: 0,
+            image:fakeImage,
+        }
+       
+        p.x = event.offsetX
+        p.y = event.offsetY
+        if(clide(p,ball)){
+            log("点中了球")
+            ball.drag();
+        }
+        if(clide(p,paddle)){
+             log("点中了板")
+            paddle.drag();
+        }
+    })
+
+    window.addEventListener("mouseup", function(event){
+
+        if(ball.draggable){
+             dragEntity(event,ball)
+        }
+        if(paddle.draggable){
+             dragEntity(event,paddle)
+        }
+
+    })
+
+    var dragEntity = function(event,enttiy){
+            enttiy.x = event.offsetX
+            enttiy.y = event.offsetY
+            enttiy.drag();
+    }    
 }
 
 __main()
